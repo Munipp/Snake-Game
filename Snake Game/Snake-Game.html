@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Yılan Oyunu</title>
+  <meta charset="UTF-8">
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas {
+    border: 1px solid white;
+  }
+  </style>
+</head>
+<body>
+<canvas width="600" height="400" id="game"></canvas>
+<script>
+var canvas = document.getElementById('game');
+var context = canvas.getContext('2d');
+
+var grid = 16;
+var count = 0;
+var isGameOver = false;
+
+var snake = {
+  x: grid, 
+  y: grid,
+  dx: grid / 2,
+  dy: 0,
+  cells: [],
+  maxCells: 4
+};
+
+var apple = {
+  x: grid,
+  y: grid,
+  width: grid,
+  height: grid
+};
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function loop() {
+  requestAnimationFrame(loop);
+
+  if (isGameOver) {
+    return;
+  }
+
+  if (++count < 6) {
+    return;
+  }
+
+  count = 0;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  snake.x += snake.dx;
+  snake.y += snake.dy;
+
+  if (snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height) {
+    isGameOver = true;
+    alert("Oyun bitti! Yeniden başlamak için herhangi bir ok tuşuna veya 'w', 'a', 's', 'd' tuşlarına basın.");
+  }
+
+  snake.cells.unshift({ x: snake.x, y: snake.y });
+
+  if (snake.cells.length > snake.maxCells) {
+    snake.cells.pop();
+  }
+
+  context.fillStyle = 'red';
+  context.fillRect(apple.x, apple.y, apple.width, apple.height);
+
+  context.fillStyle = 'green';
+  snake.cells.forEach(function (cell, index) {
+    context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+    if (cell.x === apple.x && cell.y === apple.y) {
+      snake.maxCells++;
+      spawnApple();
+    }
+
+    for (var i = index + 1; i < snake.cells.length; i++) {
+      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+        isGameOver = true;
+        alert("Oyun bitti! Yeniden başlamak için herhangi bir ok tuşuna veya 'w', 'a', 's', 'd' tuşlarına basın.");
+      }
+    }
+  });
+}
+
+function resetGame() {
+  isGameOver = false;
+  snake.x = grid;
+  snake.y = grid;
+  snake.cells = [];
+  snake.maxCells = 4;
+  snake.dx = grid / 2;
+  snake.dy = 0;
+
+  spawnApple();
+}
+
+function spawnApple() {
+  apple.x = getRandomInt(0, (canvas.width - grid) / grid) * grid;
+  apple.y = getRandomInt(0, (canvas.height - grid) / grid) * grid;
+}
+
+document.addEventListener('keydown', function (e) {
+  if (isGameOver) {
+    resetGame();
+    isGameOver = false; // Add this line to handle key press after game over
+    return;
+  }
+
+  if ((e.which === 37 || e.key === 'a') && snake.dx === 0) {
+    snake.dx = -grid / 2;
+    snake.dy = 0;
+  } else if ((e.which === 38 || e.key === 'w') && snake.dy === 0) {
+    snake.dy = -grid / 2;
+    snake.dx = 0;
+  } else if ((e.which === 39 || e.key === 'd') && snake.dx === 0) {
+    snake.dx = grid / 2;
+    snake.dy = 0;
+  } else if ((e.which === 40 || e.key === 's') && snake.dy === 0) {
+    snake.dy = grid / 2;
+    snake.dx = 0;
+  }
+});
+
+resetGame();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
